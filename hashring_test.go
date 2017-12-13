@@ -80,11 +80,67 @@ func TestHashRing_AddNode(t *testing.T) {
 	for _, c := range tests {
 		hr := New(c.virtualNodeCount)
 		for _, node := range c.nodes {
-			hr.AddNode(node)
+			hr.Add(node)
 		}
 
 		if !(testContains(hr, c.nodes) && len(hr.idx) == c.virtualNodeCount*len(c.nodes)) {
 			t.Fatalf("node count didn't match: %+v\n", hr)
+		}
+	}
+}
+
+func TestHashRing_Delete(t *testing.T) {
+	vcount := 3
+	nodes := []string{"abc_1", "abc_node", "abc_2", "abc_3"}
+
+	hr := New(vcount)
+	for _, n := range nodes {
+		hr.Add(n)
+	}
+
+	testContains := func(hr *HashRing, nodes []string) bool {
+		result := true
+		for _, node := range nodes {
+			count := 0
+			for _, v := range hr.nodes {
+				if v == node {
+					count++
+				}
+			}
+
+			result = result && (count == hr.virtualNodeCount)
+		}
+
+		return result
+	}
+
+	tests := []struct {
+		nodes         []string
+		requiredCount int
+	}{
+		{
+			nodes:         []string{"abc_node"},
+			requiredCount: 9,
+		},
+
+		{
+			nodes:         []string{"abc_3"},
+			requiredCount: 6,
+		},
+
+		{
+			nodes:         []string{"abc_1", "abc_2"},
+			requiredCount: 0,
+		},
+	}
+
+	for _, c := range tests {
+		for _, n := range c.nodes {
+			hr.Delete(n)
+		}
+
+		if testContains(hr, c.nodes) || len(hr.idx) != c.requiredCount {
+			t.Fatalf("delete failed: %+v\n", hr)
 		}
 	}
 }
