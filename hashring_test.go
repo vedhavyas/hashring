@@ -78,7 +78,7 @@ func TestHashRing_AddNode(t *testing.T) {
 	}
 
 	for _, c := range tests {
-		hr := New(c.virtualNodeCount)
+		hr := New(c.virtualNodeCount, nil)
 		for _, node := range c.nodes {
 			hr.Add(node)
 		}
@@ -93,7 +93,7 @@ func TestHashRing_Delete(t *testing.T) {
 	vcount := 3
 	nodes := []string{"abc_1", "abc_node", "abc_2", "abc_3"}
 
-	hr := New(vcount)
+	hr := New(vcount, nil)
 	for _, n := range nodes {
 		hr.Add(n)
 	}
@@ -181,7 +181,7 @@ func TestHashRing_Get(t *testing.T) {
 	}
 
 	for _, c := range tests {
-		hr := New(c.replicas)
+		hr := New(c.replicas, nil)
 		for _, n := range c.nodes {
 			err := hr.Add(n)
 			if err != nil {
@@ -190,7 +190,7 @@ func TestHashRing_Get(t *testing.T) {
 		}
 
 		for _, k := range c.keys {
-			n, err := hr.Get(k)
+			n, err := hr.Locate(k)
 			if err != nil {
 				t.Fatalf("unexpected error: %v\n", err)
 			}

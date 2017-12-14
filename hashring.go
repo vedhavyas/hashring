@@ -35,12 +35,17 @@ type HashRing struct {
 	mu           sync.RWMutex // to protect above fields
 }
 
-// New returns a Hash ring with provided virtual node count
-func New(replicaCount int) *HashRing {
+// New returns a Hash ring with provided virtual node count and hash
+// If hash is nil, fvn32a is used instead
+func New(replicaCount int, hash hash.Hash32) *HashRing {
+	if hash == nil {
+		hash = fnv.New32a()
+	}
+
 	return &HashRing{
 		nodes:        make(map[uint32]string),
 		replicaCount: replicaCount,
-		hash:         fnv.New32a(),
+		hash:         hash,
 	}
 }
 
@@ -104,8 +109,8 @@ func (hr *HashRing) Delete(node string) error {
 	return nil
 }
 
-// Get returns the node for a given key
-func (hr *HashRing) Get(key string) (node string, err error) {
+// Locate returns the node for a given key
+func (hr *HashRing) Locate(key string) (node string, err error) {
 	hr.mu.RLock()
 	defer hr.mu.RUnlock()
 
