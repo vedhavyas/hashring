@@ -120,16 +120,12 @@ func (hr *HashRing) Locate(key string) (node string, err error) {
 
 	hkey, err := getHash(hr.hash, []byte(key))
 	if err != nil {
-		return node, fmt.Errorf("failed to fetch node: %v\n", err)
+		return node, fmt.Errorf("failed to fetch node: %v", err)
 	}
 
-	for _, k := range hr.idx {
-		if k < hkey {
-			continue
-		}
-
-		return hr.nodes[k], nil
+	pos := sort.Search(len(hr.idx), func(i int) bool { return hr.idx[i] < hkey })
+	if pos == len(hr.idx) {
+		return hr.nodes[hr.idx[0]], nil
 	}
-
-	return hr.nodes[hr.idx[0]], nil
+	return hr.nodes[hr.idx[pos]], nil
 }
