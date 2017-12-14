@@ -71,7 +71,7 @@ func TestHashRing_AddNode(t *testing.T) {
 				}
 			}
 
-			result = result && (count == hr.virtualNodeCount)
+			result = result && (count == hr.replicaCount)
 		}
 
 		return result
@@ -108,7 +108,7 @@ func TestHashRing_Delete(t *testing.T) {
 				}
 			}
 
-			result = result && (count == hr.virtualNodeCount)
+			result = result && (count == hr.replicaCount)
 		}
 
 		return result
@@ -143,4 +143,62 @@ func TestHashRing_Delete(t *testing.T) {
 			t.Fatalf("delete failed: %+v\n", hr)
 		}
 	}
+}
+
+func TestHashRing_Get(t *testing.T) {
+	tests := []struct {
+		replicas int
+		nodes    []string
+		keys     []string
+	}{
+		{
+			replicas: 2,
+			nodes:    []string{"10.10.10.1", "10.10.10.2", "10.10.10.3"},
+			keys:     []string{"abc", "cde", "some random key", "found it"},
+		},
+
+		{
+			replicas: 4,
+			nodes:    []string{"10.10.10.1", "10.10.10.2"},
+			keys:     []string{"abc", "cde", "some random key", "found it"},
+		},
+
+		{
+			replicas: 1,
+			nodes:    []string{"10.10.10.1", "10.10.10.2", "10.10.10.3", "10.10.10.4"},
+			keys:     []string{"abc", "cde", "some random key", "found it"},
+		},
+	}
+
+	testContains := func(list []string, item string) bool {
+		for _, l := range list {
+			if l == item {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, c := range tests {
+		hr := New(c.replicas)
+		for _, n := range c.nodes {
+			err := hr.Add(n)
+			if err != nil {
+				t.Fatalf("unexpected error: %v\n", err)
+			}
+		}
+
+		for _, k := range c.keys {
+			n, err := hr.Get(k)
+			if err != nil {
+				t.Fatalf("unexpected error: %v\n", err)
+			}
+
+			if !testContains(c.nodes, n) {
+				t.Fatalf("unexpected node found: %s\n", n)
+			}
+		}
+	}
+
 }
