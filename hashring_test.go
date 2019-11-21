@@ -170,7 +170,7 @@ func TestHashRing_Get(t *testing.T) {
 		},
 	}
 
-	testContains := func(list []string, item string) bool {
+	testContains := func(list []string, item interface{}) bool {
 		for _, l := range list {
 			if l == item {
 				return true

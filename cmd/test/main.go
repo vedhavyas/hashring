@@ -46,8 +46,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		nodeMap[n]++
+		nodeMap[n.(string)]++
 	}
 
 	if scanner.Err() != nil {

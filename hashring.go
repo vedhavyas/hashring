@@ -28,7 +28,7 @@ func (idx nodeIdx) Less(i, j int) bool {
 
 // HashRing to hold the nodes and indexes
 type HashRing struct {
-	nodes        map[uint32]string // map to idx -> node
+	nodes        map[uint32]interface{} // map to idx -> node
 	idx          nodeIdx           // sorted indexes
 	replicaCount int               // replicas to be inserted
 	hash         hash.Hash32
@@ -43,7 +43,7 @@ func New(replicaCount int, hash hash.Hash32) *HashRing {
 	}
 
 	return &HashRing{
-		nodes:        make(map[uint32]string),
+		nodes:        make(map[uint32]interface{}),
 		replicaCount: replicaCount,
 		hash:         hash,
 	}
@@ -61,7 +61,7 @@ func getHash(hash hash.Hash32, key []byte) (uint32, error) {
 }
 
 // Add adds a node to Hash ring
-func (hr *HashRing) Add(node string) error {
+func (hr *HashRing) Add(node interface{}) error {
 	hr.mu.Lock()
 	defer hr.mu.Unlock()
 
@@ -81,7 +81,7 @@ func (hr *HashRing) Add(node string) error {
 }
 
 // getKeys returns the keys of map m
-func getKeys(m map[uint32]string) (idx nodeIdx) {
+func getKeys(m map[uint32]interface{}) (idx nodeIdx) {
 	for k := range m {
 		idx = append(idx, k)
 	}
@@ -90,7 +90,7 @@ func getKeys(m map[uint32]string) (idx nodeIdx) {
 }
 
 // Delete deletes the nodes from hash ring
-func (hr *HashRing) Delete(node string) error {
+func (hr *HashRing) Delete(node interface{}) error {
 	hr.mu.Lock()
 	defer hr.mu.Unlock()
 
@@ -110,7 +110,7 @@ func (hr *HashRing) Delete(node string) error {
 }
 
 // Locate returns the node for a given key
-func (hr *HashRing) Locate(key string) (node string, err error) {
+func (hr *HashRing) Locate(key string) (node interface{}, err error) {
 	hr.mu.RLock()
 	defer hr.mu.RUnlock()
 
