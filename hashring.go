@@ -32,7 +32,7 @@ type HashRing struct {
 	idx          nodeIdx           // sorted indexes
 	replicaCount int               // replicas to be inserted
 	hash         hash.Hash32
-	mu           sync.RWMutex // to protect above fields
+	mu           sync.Mutex // to protect above fields
 }
 
 // New returns a Hash ring with provided virtual node count and hash
@@ -111,8 +111,8 @@ func (hr *HashRing) Delete(node string) error {
 
 // Locate returns the node for a given key
 func (hr *HashRing) Locate(key string) (node string, err error) {
-	hr.mu.RLock()
-	defer hr.mu.RUnlock()
+	hr.mu.Lock()
+	defer hr.mu.Unlock()
 
 	if len(hr.idx) < 1 {
 		return node, fmt.Errorf("no available nodes")

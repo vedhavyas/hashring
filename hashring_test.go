@@ -1,8 +1,10 @@
 package hashring
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"testing"
 )
 
@@ -201,4 +203,29 @@ func TestHashRing_Get(t *testing.T) {
 		}
 	}
 
+}
+
+func BenchmarkHashRing_Get(b *testing.B) {
+	n := 5
+	c := 32
+
+	hr := New(n, nil)
+	for i := 1; i <= n; i++ {
+		hr.Add(fmt.Sprintf("127.0.0.%d", i))
+	}
+
+	b.ResetTimer()
+
+	for i := 2; i <= c; i *= 2 {
+		b.Run(strconv.Itoa(i), func(b *testing.B) {
+			b.SetParallelism(i)
+			b.RunParallel(func(pb *testing.PB) {
+				k := 0
+				for pb.Next() {
+					k++
+					hr.Locate(strconv.Itoa(k))
+				}
+			})
+		})
+	}
 }
